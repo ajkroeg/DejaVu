@@ -20,7 +20,7 @@ namespace DejaVu.Patches
         public static void Postfix(Mech __instance, Team team)
         {
             if (__instance.MechDef.Inventory.Any(x =>
-                x.Def.ComponentTags.Any(y => ModInit.modSettings.dissallowedComponentTags.Contains(y)))) return;
+                x.Def.ComponentTags.Any(y => ModInit.modSettings.disallowedComponentTags.Contains(y)))) return;
             var combat = UnityGameInstance.BattleTechGame.Combat;
             if (combat.ActiveContract.ContractTypeValue.IsSkirmish) return;
             var sim = UnityGameInstance.BattleTechGame.Simulation;
