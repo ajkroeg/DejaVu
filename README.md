@@ -10,7 +10,10 @@ Before export, the custom mechs are checked against existing mechs in order to a
 	"Settings": {
 		"enableLogging": true,
 		"trace": false,
-		"killsToSave": 0
+		"killsToSave": 0,
+		"dissallowedComponentTags": [
+			"range_standard"
+		]
 	}
 ```
 `enableLogging`: bool, enables logging
@@ -18,3 +21,5 @@ Before export, the custom mechs are checked against existing mechs in order to a
 `trace`: bool, enables verbose logging (not recommended to enable)
 
 `killsToSave`: int, set a minimum number of kills a unit must get during the mission in order to be exported.
+
+`dissallowedComponentTags`: List<string>, a list of mech ComponentTags which, if present on the mech, will prevent that mech from being exported.
