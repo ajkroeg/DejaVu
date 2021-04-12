@@ -22,4 +22,4 @@ Before export, the custom mechs are checked against existing mechs in order to a
 
 `killsToSave`: int, set a minimum number of kills a unit must get during the mission in order to be exported.
 
-`dissallowedComponentTags`: List of mech ComponentTags which, if present on the mech, will prevent that mech from being exported.
+`disallowedComponentTags`: List of mech ComponentTags which, if present on the mech, will prevent that mech from being exported.
