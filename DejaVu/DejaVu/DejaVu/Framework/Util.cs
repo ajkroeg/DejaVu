@@ -103,38 +103,6 @@ namespace DejaVu.Framework
                 var append = $"-{RandomString(2)}";
                 try
                 {
-                    var mechID = def.Description.Id + append;
-                    var newUIName = def.Description.UIName;
-                    if (string.IsNullOrEmpty(newUIName))
-                    {
-                        newUIName += def.Chassis.VariantName + append;
-                    }
-                    else
-                    {
-                        newUIName = def.Description.UIName + append;
-                    }
-                    ModInit.modLog.LogMessage($"Added {append} to mechdefID: {mechID} and UIName: {newUIName}");
-                    Traverse.Create(def).Property("Description").Property("UIName").SetValue(newUIName);
-                    Traverse.Create(def).Property("Description").Property("Id").SetValue(mechID);
-                    ModInit.modLog.LogMessage($"Set def.Description.Id to {def.Description.Id} and def.Description.UIName to {def.Description.UIName}");
-                    string path = Path.Combine(modDir, "mech", $"{def.Description.Id}.json");
-                    string dir = Path.Combine(modDir, "mech");
-
-                    Directory.CreateDirectory(dir);
-                    var jsonDef = def.ToJSON();
-                    using (StreamWriter writer = new StreamWriter(path, false))
-                    {
-                        writer.Write(jsonDef);
-                        writer.Flush();
-                    }
-                }
-                catch (Exception e)
-                {
-                    modLog?.LogException(e);
-                }
-
-                try
-                {
                     var chassisID = def.Chassis.Description.Id + append;
                     var variantID = def.Chassis.VariantName + append;
                     var chassisUIName = def.Chassis.Description.UIName + append;
@@ -145,13 +113,59 @@ namespace DejaVu.Framework
                     ModInit.modLog.LogMessage($"Set def.Chassic.Description.Id to {def.Chassis.Description.Id} and variantname to {def.Chassis.VariantName}");
 
                     
-                    string path = Path.Combine(modDir, "chassis", $"{def.Chassis.Description.Id}.json");
-                    string dir = Path.Combine(modDir, "chassis");
-                    Directory.CreateDirectory(dir);
+                    string chassisPath = Path.Combine(modDir, "chassis", $"{def.Chassis.Description.Id}.json");
+                    string chassicDir = Path.Combine(modDir, "chassis");
+                    Directory.CreateDirectory(chassicDir);
                     var jsonChassisDef = def.Chassis.ToJSON();
-                    using (StreamWriter writer = new StreamWriter(path, false))
+                    using (StreamWriter writer = new StreamWriter(chassisPath, false))
                     {
                         writer.Write(jsonChassisDef);
+                        writer.Flush();
+                    }
+
+                    ModInit.modLog.LogMessage($"Serialized {def.Description.UIName} to .json");
+
+                    var mechID = def.Description.Id + append;
+                    var newUIName = def.Description.UIName;
+                    if (string.IsNullOrEmpty(newUIName))
+                    {
+                        newUIName = variantID;
+                    }
+                    else
+                    {
+                        newUIName = def.Description.UIName + append;
+                    }
+
+                    ModInit.modLog.LogMessage($"Added {append} to mechdefID: {mechID} and UIName: {newUIName}");
+                    Traverse.Create(def).Property("ChassisID").SetValue(chassisID);
+                    Traverse.Create(def).Property("Description").Property("UIName").SetValue(newUIName);
+                    Traverse.Create(def).Property("Description").Property("Id").SetValue(mechID);
+
+                    var mechdefInventoryList = def.Inventory.ToList();
+                    foreach (var fixedcomponent in def.Chassis.FixedEquipment)
+                    {
+                        mechdefInventoryList.RemoveAll(x => x.ComponentDefID == fixedcomponent.ComponentDefID && x.MountedLocation == fixedcomponent.MountedLocation);
+                    }
+
+                    var mechdefInventory = mechdefInventoryList.ToArray();
+                    def.Chassis = null;
+
+                    Traverse.Create(def).Field("inventory").SetValue(mechdefInventory);
+
+                    foreach (var component in def.Inventory)
+                    {
+                        component.SetSimGameUID(null);
+                        component.SetGuid(null);
+                    }
+                    ModInit.modLog.LogMessage($"Set def.Description.Id to {def.Description.Id} and def.Description.UIName to {def.Description.UIName}");
+                    string mechPath = Path.Combine(modDir, "mech", $"{def.Description.Id}.json");
+                    string mechDir = Path.Combine(modDir, "mech");
+
+                    Directory.CreateDirectory(mechDir);
+                    var jsonDef = def.ToJSON();
+                    using (StreamWriter writer = new StreamWriter(mechPath, false))
+                    {
+                        writer.Write(jsonDef);
                         writer.Flush();
                     }
                 }
@@ -159,7 +173,6 @@ namespace DejaVu.Framework
                 {
                     modLog?.LogException(e);
                 }
-                ModInit.modLog.LogMessage($"Serialized {def.Description.UIName} to .json");
             }
         }
     }
