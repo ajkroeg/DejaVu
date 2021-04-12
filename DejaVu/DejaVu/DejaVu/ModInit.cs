@@ -46,5 +46,6 @@ namespace DejaVu
         public bool enableLogging = true;
         public bool trace = true;
         public int killsToSave = 0;
+        public List<string> dissallowedComponentTags = new List<string>();
     }
 }
