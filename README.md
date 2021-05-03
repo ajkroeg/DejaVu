@@ -4,6 +4,8 @@ This is a relatively simple mod that lets player face their own creations in com
 
 Before export, the custom mechs are checked against existing mechs in order to avoid duplication. Variant names are also appended with a random 2-character string to further distinguish these mechs when encountered in the wild. E.g., a player-customized variant of the Hunchback HBK-4G might be saved as HBK-4G-2W. These custom mechs will have the same unit tags as their originating variant. Finally, the mech inventory of the custom mech is checked against the inventory of all existing variants; if a duplicate is found, the mech is not exported.
 
+<b>Depends On CustomComponents and CustomUnits<b>
+
 ## Settings
 
 ```
@@ -11,6 +13,7 @@ Before export, the custom mechs are checked against existing mechs in order to a
 		"enableLogging": true,
 		"trace": false,
 		"killsToSave": 0,
+		"enableMechBayExport": true,
 		"dissallowedComponentTags": [
 			"range_standard"
 		]
@@ -20,6 +23,8 @@ Before export, the custom mechs are checked against existing mechs in order to a
 
 `trace`: bool, enables verbose logging (not recommended to enable)
 
-`killsToSave`: int, set a minimum number of kills a unit must get during the mission in order to be exported.
+`killsToSave`: int, set a minimum number of kills a unit must get during the mission in order to be exported. If set to -1, all exporting of units dropped in contracts is disabled.
+
+`enableMechBayExport`: bool, if true; holding shift while clicking "validate" in the MechLab will manually export that unit <i>if</i> that unit is a valid loadout (no "unfieldable" warnings and mech name is not blank).
 
 `disallowedComponentTags`: List of mech ComponentTags which, if present on the mech, will prevent that mech from being exported.
