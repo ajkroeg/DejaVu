@@ -4,7 +4,7 @@ This is a relatively simple mod that lets player face their own creations in com
 
 Before export, the custom mechs are checked against existing mechs in order to avoid duplication. Variant names are also appended with a random 2-character string to further distinguish these mechs when encountered in the wild. E.g., a player-customized variant of the Hunchback HBK-4G might be saved as HBK-4G-2W. These custom mechs will have the same unit tags as their originating variant. Finally, the mech inventory of the custom mech is checked against the inventory of all existing variants; if a duplicate is found, the mech is not exported.
 
-<b>Depends On CustomComponents and CustomUnits<b>
+<b>Depends On CustomComponents and CustomUnits</b>
 
 ## Settings
 
