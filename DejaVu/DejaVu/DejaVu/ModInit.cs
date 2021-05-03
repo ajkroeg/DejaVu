@@ -27,7 +27,7 @@ namespace DejaVu
             }
             catch (Exception ex)
             {
-                ModInit.modLog.LogException(ex);
+                ModInit.modLog?.LogException(ex);
                 ModInit.modSettings = new Settings();
             }
             modLog = new Logger(modDir, "DejaVu", modSettings.enableLogging, modSettings.trace);
@@ -36,7 +36,6 @@ namespace DejaVu
             Util.UtilInstance.Initialize();
             var harmony = HarmonyInstance.Create(HarmonyPackage);
             harmony.PatchAll(Assembly.GetExecutingAssembly());
-
         }
 
     }
@@ -46,6 +45,7 @@ namespace DejaVu
         public bool enableLogging = true;
         public bool trace = true;
         public int killsToSave = 0;
+        public bool enableMechBayExport = true;
         public List<string> disallowedComponentTags = new List<string>();
     }
 }

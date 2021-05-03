@@ -6,14 +6,24 @@ using System.Text;
 using System.Threading.Tasks;
 using BattleTech;
 using BattleTech.Data;
+using CustomComponents;
 using Harmony;
 using Newtonsoft.Json;
 using static DejaVu.ModInit;
+using CustomUnits;
+using Newtonsoft.Json.Linq;
+using HBS.Util;
 
 namespace DejaVu.Framework
 {
+    class ModState
+    {
+        public static bool runContinueConfirmClickedPost;
+    }
+
     class Util
     {
+
         private static Random random = new Random();
         public static string RandomString(int length)
         {
@@ -23,11 +33,10 @@ namespace DejaVu.Framework
         }
 
         internal static Util _instance;
-        public List<MechDef> dejaVuMechs;
 
-//        public List<MechDef> allMechs;
-        public List<MechComponentRef[]> allMechInventories;
-
+        public List<MechDef> DejaVuMechs;
+        public List<MechComponentRef[]> AllMechInventories;
+        public List<MechComponentRef[]> DejaVuInventories;
         public static Util UtilInstance
         {
             get
@@ -39,26 +48,23 @@ namespace DejaVu.Framework
 
         internal void Initialize()
         {
-            dejaVuMechs = new List<MechDef>();
-//            allMechs = new List<MechDef>();
-            allMechInventories = new List<MechComponentRef[]>();
+            DejaVuMechs = new List<MechDef>();
+            AllMechInventories = new List<MechComponentRef[]>();
+            DejaVuInventories = new List<MechComponentRef[]>();
         }
 
-        internal void InitializeAllMechs(DataManager dm)
+        internal void GetDataManagerMechDefInventories(DataManager dm)
         {
-            if (allMechInventories.Count == 0)
+            if (AllMechInventories.Count == 0)
             {
                 foreach (var t in dm.MechDefs)
                 {
-//                    allMechs.Add(t.Value);
-//                    ModInit.modLog.LogTrace($"Added MechDef: {t.Value.Description.UIName} to allMechs");
-                    allMechInventories.Add(t.Value.Inventory);
+                    AllMechInventories.Add(t.Value.Inventory);
                     ModInit.modLog.LogTrace($"Added MechInventory for {t.Value.Description.UIName} to allMechInventories");
                 }
             }
         }
-
-
+        
         public class MechComponentArrayComparer : IEqualityComparer<MechComponentRef>
         {
             public bool Equals(MechComponentRef x, MechComponentRef y)
@@ -82,97 +88,130 @@ namespace DejaVu.Framework
 
         internal static void SerializeMech(MechDef def)
         {
-            var inventory = def.Inventory;
-            var comparer = new MechComponentArrayComparer();
-            var foundmatches = false;
-            inventory = inventory.OrderBy(i => i.ComponentDefID).ToArray();
-            foreach (var mechinventory in new List<MechComponentRef[]>(UtilInstance.allMechInventories))
+            var append = $"-{RandomString(2)}";
+            Util.UtilInstance.DejaVuInventories.Add(def.Inventory);
+            ModInit.modLog.LogMessage($"Added MechInventory for {def.Description.UIName} to DejaVuInventories");
+            try
             {
-                if (inventory.Length == mechinventory.Length)
+                def.DataManager = null;
+                def.SetGuid(null);
+                foreach (var component in def.Inventory)
                 {
-                    ModInit.modLog.LogTrace($"{def.Description.UIName} inventory length is same as reference mechInventory");
-                    var orderedinventory = mechinventory.OrderBy(i => i.ComponentDefID).ToArray();
-                    var results = mechinventory.Except(inventory, comparer);
-                    if (!results.Any()) foundmatches = true;
+                    component.SetSimGameUID(null);
+                    component.SetGuid(null);
+                    component.DataManager = null;
                 }
+                foreach (var component in def.Chassis.FixedEquipment)
+                {
+                    component.SetSimGameUID(null);
+                    component.SetGuid(null);
+                    component.DataManager = null;
+                }
+
+                ModInit.modLog.LogMessage($"Processing ChassisDef: {def.Chassis.Description.Id}");
+
+                var customParts = new UnitCustomInfo();
+                if (VehicleCustomInfoHelper.vehicleChasissInfosDb.ContainsKey(def.ChassisID))
+                {
+                    customParts = VehicleCustomInfoHelper.vehicleChasissInfosDb[def.ChassisID];
+                }
+
+                var chassisCustoms = Database.GetCustoms<ICustom>(def.Chassis).ToList();
+                var chassisCustomsDict = new Dictionary<string, ICustom>();
+                for (int i = 0; i < chassisCustoms.ToList().Count(); i++)
+                {
+                    chassisCustomsDict.Add(chassisCustoms[i].GetType().Name, chassisCustoms[i]);
+                    ModInit.modLog.LogMessage($"Added {chassisCustoms[i].GetType().Name} to chassisCustomsDict");
+                }
+
+                var customPartsJS = JSONSerializationUtility.ToJSON(customParts);
+                var chassisCustomsJS = JSONSerializationUtility.ToJSON(chassisCustomsDict);
+
+
+                var variantID = def.Chassis.VariantName + append;
+                var chassisID = def.Chassis.Description.Id + append;
+                var chassisUIName = def.Chassis.Description.UIName + append;
+
+
+                var jsonChassisDefString = def.Chassis.ToJSON();
+                var jsonChassisDef = JObject.Parse(jsonChassisDefString);
+
+                var chassisCustomsJA = JArray.Parse(chassisCustomsJS);
+                var customPartsJA = JObject.Parse(customPartsJS);
+                
+                jsonChassisDef.Add("Custom", chassisCustomsJA);
+                jsonChassisDef.Add("CustomParts", customPartsJA);
+
+
+                ModInit.modLog.LogMessage($"Added {append} to chassisID: {chassisID}, variantName: {variantID}, and UIName: {chassisUIName}");
+                jsonChassisDef["VariantName"] = variantID;
+                jsonChassisDef["Description"]["Id"] = chassisID;
+                jsonChassisDef["Description"]["UIName"] = chassisUIName;
+                ModInit.modLog.LogMessage($"Set def.VariantName to {jsonChassisDef["VariantName"]}, def.Chassis.Description.Id to {jsonChassisDef["Description"]["Id"]} and def.Chassis.Description.UIName to {jsonChassisDef["Description"]["UIName"]}");
+
+                var jsonChassisDefJSON = jsonChassisDef.ToString();
+
+                string chassisPath = Path.Combine(modDir, "chassis", $"{jsonChassisDef["Description"]["Id"]}.json");
+                string chassicDir = Path.Combine(modDir, "chassis");
+                Directory.CreateDirectory(chassicDir);
+
+                using (StreamWriter writer = new StreamWriter(chassisPath, false))
+                {
+                    writer.Write(jsonChassisDefJSON);
+                    writer.Flush();
+                }
+                ModInit.modLog.LogMessage($"Serialized {jsonChassisDef["Description"]["Id"]} chassisDef to .json");
+
+                ModInit.modLog.LogMessage($"Processing MechDef sans ChassisDef: {def.Description.Id}");
+
+                var mechID = def.Description.Id + append;
+                var newUIName = def.Description.UIName;
+                ModInit.modLog.LogMessage($"Added {append} to mechdefID: {mechID} and UIName: {newUIName}");
+
+                if (string.IsNullOrEmpty(newUIName))
+                {
+                    newUIName = variantID;
+                }
+                else
+                {
+                    newUIName = def.Description.UIName + append;
+                }
+
+                var mechdefInventoryList = new List<MechComponentRef>(def.Inventory.ToList());
+                foreach (var fixedcomponent in def.Chassis.FixedEquipment)
+                {
+                    mechdefInventoryList.RemoveAll(x => x.ComponentDefID == fixedcomponent.ComponentDefID && x.MountedLocation == fixedcomponent.MountedLocation);
+                }
+
+                var mechdefInventory = mechdefInventoryList.ToArray();
+
+                var mechdefInventoryJSON = JSONSerializationUtility.ToJSON(mechdefInventory);
+                var mechdefInventoryJA = JArray.Parse(mechdefInventoryJSON);
+
+                var jsonMechDefString = def.ToJSON();
+                var jsonMechDef = JObject.Parse(jsonMechDefString);
+                jsonMechDef["Chassis"].Parent.Remove();
+                jsonMechDef["ChassisID"] = chassisID;
+                jsonMechDef["Description"]["UIName"] = newUIName;
+                jsonMechDef["Description"]["Id"] = mechID;
+                jsonMechDef["inventory"] = mechdefInventoryJA;
+                ModInit.modLog.LogMessage($"Set def.ChassisID to {jsonMechDef["ChassisID"]}, def.Description.Id to {jsonMechDef["Description"]["Id"]} and def.Description.UIName to {jsonMechDef["Description"]["UIName"]}");
+
+                var jsonMechDefJSON = jsonMechDef.ToString();
+                string mechPath = Path.Combine(modDir, "mech", $"{jsonMechDef["Description"]["Id"]}.json");
+                string mechDir = Path.Combine(modDir, "mech");
+
+                Directory.CreateDirectory(mechDir);
+                using (StreamWriter writer = new StreamWriter(mechPath, false))
+                {
+                    writer.Write(jsonMechDefJSON);
+                    writer.Flush();
+                }
+                ModInit.modLog.LogMessage($"Serialized {jsonMechDef["Description"]["Id"]} mechDef to .json");
             }
-
-            if (!foundmatches)
+            catch (Exception e)
             {
-                Util.UtilInstance.allMechInventories.Add(def.Inventory);
-                var append = $"-{RandomString(2)}";
-                try
-                {
-                    var chassisID = def.Chassis.Description.Id + append;
-                    var variantID = def.Chassis.VariantName + append;
-                    var chassisUIName = def.Chassis.Description.UIName + append;
-                    ModInit.modLog.LogMessage($"Added {append} to chassisID: {chassisID} and variantName: {variantID}");
-                    Traverse.Create(def).Property("Chassis").Property("VariantName").SetValue(variantID);
-                    Traverse.Create(def).Property("Chassis").Property("Description").Property("Id").SetValue(chassisID);
-                    Traverse.Create(def).Property("Chassis").Property("Description").Property("UIName").SetValue(chassisUIName);
-                    ModInit.modLog.LogMessage($"Set def.Chassic.Description.Id to {def.Chassis.Description.Id} and variantname to {def.Chassis.VariantName}");
-
-                    
-                    string chassisPath = Path.Combine(modDir, "chassis", $"{def.Chassis.Description.Id}.json");
-                    string chassicDir = Path.Combine(modDir, "chassis");
-                    Directory.CreateDirectory(chassicDir);
-                    var jsonChassisDef = def.Chassis.ToJSON();
-                    using (StreamWriter writer = new StreamWriter(chassisPath, false))
-                    {
-                        writer.Write(jsonChassisDef);
-                        writer.Flush();
-                    }
-
-                    ModInit.modLog.LogMessage($"Serialized {def.Description.UIName} to .json");
-
-                    var mechID = def.Description.Id + append;
-                    var newUIName = def.Description.UIName;
-                    if (string.IsNullOrEmpty(newUIName))
-                    {
-                        newUIName = variantID;
-                    }
-                    else
-                    {
-                        newUIName = def.Description.UIName + append;
-                    }
-
-                    ModInit.modLog.LogMessage($"Added {append} to mechdefID: {mechID} and UIName: {newUIName}");
-                    Traverse.Create(def).Property("ChassisID").SetValue(chassisID);
-                    Traverse.Create(def).Property("Description").Property("UIName").SetValue(newUIName);
-                    Traverse.Create(def).Property("Description").Property("Id").SetValue(mechID);
-
-                    var mechdefInventoryList = def.Inventory.ToList();
-                    foreach (var fixedcomponent in def.Chassis.FixedEquipment)
-                    {
-                        mechdefInventoryList.RemoveAll(x => x.ComponentDefID == fixedcomponent.ComponentDefID && x.MountedLocation == fixedcomponent.MountedLocation);
-                    }
-
-                    var mechdefInventory = mechdefInventoryList.ToArray();
-                    def.Chassis = null;
-
-                    Traverse.Create(def).Field("inventory").SetValue(mechdefInventory);
-
-                    foreach (var component in def.Inventory)
-                    {
-                        component.SetSimGameUID(null);
-                        component.SetGuid(null);
-                    }
-                    ModInit.modLog.LogMessage($"Set def.Description.Id to {def.Description.Id} and def.Description.UIName to {def.Description.UIName}");
-                    string mechPath = Path.Combine(modDir, "mech", $"{def.Description.Id}.json");
-                    string mechDir = Path.Combine(modDir, "mech");
-
-                    Directory.CreateDirectory(mechDir);
-                    var jsonDef = def.ToJSON();
-                    using (StreamWriter writer = new StreamWriter(mechPath, false))
-                    {
-                        writer.Write(jsonDef);
-                        writer.Flush();
-                    }
-                }
-                catch (Exception e)
-                {
-                    modLog?.LogException(e);
-                }
+                modLog?.LogException(e);
             }
         }
     }
