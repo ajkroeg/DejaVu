@@ -201,6 +201,8 @@ namespace DejaVu.Framework
                 string mechPath = Path.Combine(modDir, "mech", $"{jsonMechDef["Description"]["Id"]}.json");
                 string mechDir = Path.Combine(modDir, "mech");
 
+                File.Delete(mechPath);
+
                 Directory.CreateDirectory(mechDir);
                 using (StreamWriter writer = new StreamWriter(mechPath, false))
                 {
