@@ -16,15 +16,29 @@ Before export, the custom mechs are checked against existing mechs in order to a
 		"enableMechBayExport": true,
 		"dissallowedComponentTags": [
 			"range_standard"
-		]
+			],
+		"clearMechTags": true,
+		"customChassisTags":[
+			"thisisacustomChassisTag"
+			],
+		"customMechTags":[
+			"thisisacustomMechTag"
+			]
 	}
 ```
+
 `enableLogging`: bool, enables logging
 
 `trace`: bool, enables verbose logging (not recommended to enable)
 
 `killsToSave`: int, set a minimum number of kills a unit must get during the mission in order to be exported. If set to -1, all exporting of units dropped in contracts is disabled.
 
-`enableMechBayExport`: bool, if true; holding shift while clicking "validate" in the MechLab will manually export that unit <i>if</i> that unit is a valid loadout (no "unfieldable" warnings and mech name is not blank).
+`enableMechBayExport`: bool. if true; holding shift while clicking "validate" in the MechLab will manually export that unit <i>if</i> that unit is a valid loadout (no "unfieldable" warnings and mech name is not blank).
 
 `disallowedComponentTags`: List of mech ComponentTags which, if present on the mech, will prevent that mech from being exported.
+
+`clearMechTags`: bool. if true, all MechTags and ChassisTags will be cleared from the exported unit.
+
+`customChassisTags`:  List<string>; if `clearMechTags` = true, the exported mechs ChassisTags will be replaced with these
+
+`customMechTags`:  List<string>; if `clearMechTags` = true, the exported mechs MechTags will be replaced with these
