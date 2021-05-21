@@ -2,37 +2,35 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using BattleTech;
 using BattleTech.Data;
 using CustomComponents;
-using Harmony;
-using Newtonsoft.Json;
 using static DejaVu.ModInit;
 using CustomUnits;
+using HBS.Collections;
 using Newtonsoft.Json.Linq;
 using HBS.Util;
 
 namespace DejaVu.Framework
 {
-    class ModState
+    internal static class ModState
     {
         public static bool runContinueConfirmClickedPost;
     }
 
-    class Util
+    internal class Util
     {
 
         private static Random random = new Random();
-        public static string RandomString(int length)
+
+        private static string RandomString(int length)
         {
             const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
             return new string(Enumerable.Repeat(chars, length)
                 .Select(s => s[random.Next(s.Length)]).ToArray());
         }
 
-        internal static Util _instance;
+        private static Util _instance;
 
         public List<MechDef> DejaVuMechs;
         public List<MechComponentRef[]> AllMechInventories;
@@ -69,12 +67,7 @@ namespace DejaVu.Framework
         {
             public bool Equals(MechComponentRef x, MechComponentRef y)
             {
-
-                    if (x.MountedLocation != y.MountedLocation || x.ComponentDefID != y.ComponentDefID || x.ComponentDefType != y.ComponentDefType || x.HardpointSlot != y.HardpointSlot || x.IsFixed != y.IsFixed)
-                    {
-                        return false;
-                    }
-                    return true;
+                return x?.MountedLocation == y?.MountedLocation && x?.ComponentDefID == y?.ComponentDefID && x?.ComponentDefType == y?.ComponentDefType && x?.HardpointSlot == y?.HardpointSlot && x?.IsFixed == y?.IsFixed;
             }
             public int GetHashCode(MechComponentRef obj)
             {
@@ -118,7 +111,7 @@ namespace DejaVu.Framework
 
                 var chassisCustoms = Database.GetCustoms<ICustom>(def.Chassis).ToList();
                 var chassisCustomsDict = new Dictionary<string, ICustom>();
-                for (int i = 0; i < chassisCustoms.ToList().Count(); i++)
+                for (int i = 0; i < chassisCustoms.ToList().Count; i++)
                 {
                     chassisCustomsDict.Add(chassisCustoms[i].GetType().Name, chassisCustoms[i]);
                     ModInit.modLog.LogMessage($"Added {chassisCustoms[i].GetType().Name} to chassisCustomsDict");
@@ -132,16 +125,22 @@ namespace DejaVu.Framework
                 var chassisID = def.Chassis.Description.Id + append;
                 var chassisUIName = def.Chassis.Description.UIName + append;
 
-
                 var jsonChassisDefString = def.Chassis.ToJSON();
                 var jsonChassisDef = JObject.Parse(jsonChassisDefString);
 
                 var chassisCustomsJA = JArray.Parse(chassisCustomsJS);
-                var customPartsJA = JObject.Parse(customPartsJS);
+                var customPartsJO = JObject.Parse(customPartsJS);
                 
                 jsonChassisDef.Add("Custom", chassisCustomsJA);
-                jsonChassisDef.Add("CustomParts", customPartsJA);
+                jsonChassisDef.Add("CustomParts", customPartsJO);
 
+                if (modSettings.clearMechTags)
+                {
+                    var ChassisTags = new TagSet(modSettings.customChassisTags).ToJSON();
+                    var ChassisTagsJO = JObject.Parse(ChassisTags);
+                    jsonChassisDef["ChassisTags"] = ChassisTagsJO;
+                }
+                
 
                 ModInit.modLog.LogMessage($"Added {append} to chassisID: {chassisID}, variantName: {variantID}, and UIName: {chassisUIName}");
                 jsonChassisDef["VariantName"] = variantID;
@@ -190,6 +189,14 @@ namespace DejaVu.Framework
 
                 var jsonMechDefString = def.ToJSON();
                 var jsonMechDef = JObject.Parse(jsonMechDefString);
+
+                if (modSettings.clearMechTags)
+                {
+                    var MechTags = new TagSet(modSettings.customMechTags).ToJSON();
+                    var MechTagsJO = JObject.Parse(MechTags);
+                    jsonMechDef["MechTags"] = MechTagsJO;
+                }
+
                 jsonMechDef["Chassis"].Parent.Remove();
                 jsonMechDef["ChassisID"] = chassisID;
                 jsonMechDef["Description"]["UIName"] = newUIName;

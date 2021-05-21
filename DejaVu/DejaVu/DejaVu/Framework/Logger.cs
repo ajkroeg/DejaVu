@@ -6,8 +6,8 @@ namespace DejaVu.Framework
     class Logger
     {
         private static StreamWriter logStreamWriter;
-        private bool enableLogging = false;
-        private bool trace = false;
+        private bool enableLogging;
+        private bool trace;
 
         public Logger(string modDir, string fileName, bool enableLogging, bool trace)
         {

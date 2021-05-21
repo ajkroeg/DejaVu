@@ -1,12 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Remoting.Messaging;
-using System.Text;
-using System.Threading.Tasks;
 using BattleTech;
-using BattleTech.Save;
-using BattleTech.Save.Test;
 using BattleTech.UI;
 using DejaVu.Framework;
 using Harmony;
@@ -56,7 +51,7 @@ namespace DejaVu.Patches
             }
             
             Util.UtilInstance.GetDataManagerMechDefInventories(UnityGameInstance.BattleTechGame.DataManager);
-            var sim = UnityGameInstance.BattleTechGame.Simulation;
+
             foreach (LanceLoadoutSlot lanceLoadoutSlot in ___loadoutSlots)
             {
                 if (lanceLoadoutSlot.SelectedMech == null) continue; 
@@ -157,9 +152,9 @@ namespace DejaVu.Patches
             if (!hk) return;
 
             if (!___mechInfoWidget.IsNameValid()) return;
-            string text = __instance.GetCantSaveErrorString().ToString(true);
+            string text = __instance.GetCantSaveErrorString().ToString();
             if (!string.IsNullOrEmpty(text)) return;
-            string text2 = __instance.GetNonFieldableErrorString().ToString(true);
+            string text2 = __instance.GetNonFieldableErrorString().ToString();
             if (!string.IsNullOrEmpty(text2)) return;
 
             Util.UtilInstance.GetDataManagerMechDefInventories(UnityGameInstance.BattleTechGame.DataManager);
@@ -213,7 +208,7 @@ namespace DejaVu.Patches
             }
             else
             {
-                GenericPopupBuilder.Create("MechDef Already Exists!", "An exported MechDef with this same  loadout already exists, ignoring.").AddButton("Okay", null, true, null).CancelOnEscape().AddFader(new UIColorRef?(LazySingletonBehavior<UIManager>.Instance.UILookAndColorConstants.PopupBackfill), 0f, true).Render();
+                GenericPopupBuilder.Create("MechDef Already Exists!", "An exported MechDef with this same  loadout already exists, ignoring.").AddButton("Okay").CancelOnEscape().AddFader(LazySingletonBehavior<UIManager>.Instance.UILookAndColorConstants.PopupBackfill).Render();
                 ModInit.modLog.LogMessage(
                     $"{__instance.activeMechDef.Chassis.VariantName} already exists in dejaVuMechs or AllMechs");
             }

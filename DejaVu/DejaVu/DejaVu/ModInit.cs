@@ -2,7 +2,6 @@
 using System;
 using System.Reflection;
 using System.Collections.Generic;
-using System.IO;
 using DejaVu.Framework;
 using Newtonsoft.Json;
 
@@ -47,5 +46,8 @@ namespace DejaVu
         public int killsToSave = 0;
         public bool enableMechBayExport = true;
         public List<string> disallowedComponentTags = new List<string>();
+        public bool clearMechTags = false;
+        public List<string> customChassisTags = new List<string>();
+        public List<string> customMechTags = new List<string>();
     }
 }
