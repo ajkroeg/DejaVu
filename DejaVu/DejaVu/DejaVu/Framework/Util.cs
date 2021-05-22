@@ -140,7 +140,18 @@ namespace DejaVu.Framework
                     var ChassisTagsJO = JObject.Parse(ChassisTags);
                     jsonChassisDef["ChassisTags"] = ChassisTagsJO;
                 }
-                
+
+//                if (customParts != null)
+//                {
+//                    VehicleCustomInfoHelper.vehicleChasissInfosDb.Add(chassisID, customParts);
+//                }
+
+//                if (chassisCustoms.Count > 0)
+//                {
+//                    ChassisDefExtensions.AddComponent()
+//                }
+
+// TO DO - Make MechDef reference original ChassisDef (that way don't need to fuck with CustomUnits or CustomComponents).  ALSO patch vanilla CreateAndAddMechPart so SalvageDef pulls from Chasssis ID instead of Mech ID
 
                 ModInit.modLog.LogMessage($"Added {append} to chassisID: {chassisID}, variantName: {variantID}, and UIName: {chassisUIName}");
                 jsonChassisDef["VariantName"] = variantID;
