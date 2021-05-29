@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using BattleTech;
 using BattleTech.Data;
-using CustomComponents;
 using static DejaVu.ModInit;
-using CustomUnits;
 using HBS.Collections;
 using Newtonsoft.Json.Linq;
 using HBS.Util;
@@ -79,6 +78,20 @@ namespace DejaVu.Framework
             }
         }
 
+        internal static bool detectCS()
+        {
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            var result = false;
+            foreach (var assembly in assemblies)
+            {
+                if (assembly.FullName.StartsWith("CustomSalvage"))
+                {
+                    result = true;
+                }
+            }
+            return result;
+        }
+
         internal static void SerializeMech(MechDef def)
         {
             var append = $"-{RandomString(2)}";
@@ -94,6 +107,7 @@ namespace DejaVu.Framework
                     component.SetGuid(null);
                     component.DataManager = null;
                 }
+
                 foreach (var component in def.Chassis.FixedEquipment)
                 {
                     component.SetSimGameUID(null);
@@ -101,76 +115,13 @@ namespace DejaVu.Framework
                     component.DataManager = null;
                 }
 
-                ModInit.modLog.LogMessage($"Processing ChassisDef: {def.Chassis.Description.Id}");
+//                ProcessChassis(def, append); // old, unused chassis processing ; method  in CU_CC_Util, requires CU and CC references - pones CSalv rework should take care of this
 
-                var customParts = new UnitCustomInfo();
-                if (VehicleCustomInfoHelper.vehicleChasissInfosDb.ContainsKey(def.ChassisID))
-                {
-                    customParts = VehicleCustomInfoHelper.vehicleChasissInfosDb[def.ChassisID];
-                }
+// TO DO - Make MechDef reference original ChassisDef (that way don't need to fuck with CustomUnits or CustomComponents).  ALSO patch vanilla Contract.CreateMechPart so SalvageDef pulls base MechDef NOT custom MechDef - finished?
 
-                var chassisCustoms = Database.GetCustoms<ICustom>(def.Chassis).ToList();
-                var chassisCustomsDict = new Dictionary<string, ICustom>();
-                for (int i = 0; i < chassisCustoms.ToList().Count; i++)
-                {
-                    chassisCustomsDict.Add(chassisCustoms[i].GetType().Name, chassisCustoms[i]);
-                    ModInit.modLog.LogMessage($"Added {chassisCustoms[i].GetType().Name} to chassisCustomsDict");
-                }
-
-                var customPartsJS = JSONSerializationUtility.ToJSON(customParts);
-                var chassisCustomsJS = JSONSerializationUtility.ToJSON(chassisCustomsDict);
-
-
-                var variantID = def.Chassis.VariantName + append;
-                var chassisID = def.Chassis.Description.Id + append;
-                var chassisUIName = def.Chassis.Description.UIName + append;
-
-                var jsonChassisDefString = def.Chassis.ToJSON();
-                var jsonChassisDef = JObject.Parse(jsonChassisDefString);
-
-                var chassisCustomsJA = JArray.Parse(chassisCustomsJS);
-                var customPartsJO = JObject.Parse(customPartsJS);
                 
-                jsonChassisDef.Add("Custom", chassisCustomsJA);
-                jsonChassisDef.Add("CustomParts", customPartsJO);
-
-                if (modSettings.clearMechTags)
-                {
-                    var ChassisTags = new TagSet(modSettings.customChassisTags).ToJSON();
-                    var ChassisTagsJO = JObject.Parse(ChassisTags);
-                    jsonChassisDef["ChassisTags"] = ChassisTagsJO;
-                }
-
-//                if (customParts != null)
-//                {
-//                    VehicleCustomInfoHelper.vehicleChasissInfosDb.Add(chassisID, customParts);
-//                }
-
-//                if (chassisCustoms.Count > 0)
-//                {
-//                    ChassisDefExtensions.AddComponent()
-//                }
-
-// TO DO - Make MechDef reference original ChassisDef (that way don't need to fuck with CustomUnits or CustomComponents).  ALSO patch vanilla CreateAndAddMechPart so SalvageDef pulls from Chasssis ID instead of Mech ID
-
-                ModInit.modLog.LogMessage($"Added {append} to chassisID: {chassisID}, variantName: {variantID}, and UIName: {chassisUIName}");
-                jsonChassisDef["VariantName"] = variantID;
-                jsonChassisDef["Description"]["Id"] = chassisID;
-                jsonChassisDef["Description"]["UIName"] = chassisUIName;
-                ModInit.modLog.LogMessage($"Set def.VariantName to {jsonChassisDef["VariantName"]}, def.Chassis.Description.Id to {jsonChassisDef["Description"]["Id"]} and def.Chassis.Description.UIName to {jsonChassisDef["Description"]["UIName"]}");
-
-                var jsonChassisDefJSON = jsonChassisDef.ToString();
-
-                string chassisPath = Path.Combine(modDir, "chassis", $"{jsonChassisDef["Description"]["Id"]}.json");
-                string chassicDir = Path.Combine(modDir, "chassis");
-                Directory.CreateDirectory(chassicDir);
-
-                using (StreamWriter writer = new StreamWriter(chassisPath, false))
-                {
-                    writer.Write(jsonChassisDefJSON);
-                    writer.Flush();
-                }
-                ModInit.modLog.LogMessage($"Serialized {jsonChassisDef["Description"]["Id"]} chassisDef to .json");
+                var variantID = def.Chassis.VariantName + append;
+//                var chassisID = def.Chassis.Description.Id + append;
 
                 ModInit.modLog.LogMessage($"Processing MechDef sans ChassisDef: {def.Description.Id}");
 
@@ -209,7 +160,7 @@ namespace DejaVu.Framework
                 }
 
                 jsonMechDef["Chassis"].Parent.Remove();
-                jsonMechDef["ChassisID"] = chassisID;
+//                jsonMechDef["ChassisID"] = chassisID;
                 jsonMechDef["Description"]["UIName"] = newUIName;
                 jsonMechDef["Description"]["Id"] = mechID;
                 jsonMechDef["inventory"] = mechdefInventoryJA;

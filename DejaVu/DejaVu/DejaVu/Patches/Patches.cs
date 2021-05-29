@@ -29,7 +29,7 @@ namespace DejaVu.Patches
         public static void Postfix(LanceConfiguratorPanel __instance, LanceLoadoutSlot[] ___loadoutSlots)
         {
             bool flag = false;
-            foreach (LanceLoadoutSlot lanceLoadoutSlot in ___loadoutSlots)
+            foreach (var lanceLoadoutSlot in ___loadoutSlots)
             {
                 if (lanceLoadoutSlot.SelectedMech != null)
                 {
@@ -212,6 +212,44 @@ namespace DejaVu.Patches
                 ModInit.modLog.LogMessage(
                     $"{__instance.activeMechDef.Chassis.VariantName} already exists in dejaVuMechs or AllMechs");
             }
+        }
+    }
+
+    [HarmonyPatch(typeof(Contract), "CreateMechPart")]
+    public static class Contract_CreateMechPart
+    {
+        public static bool Prepare() => !Util.detectCS();
+
+        public static void Postfix(Contract __instance, SimGameConstants sc, MechDef m, ref SalvageDef __result)
+        {
+            var salvageDef = new SalvageDef
+            {
+                Type = SalvageDef.SalvageType.MECH_PART,
+                ComponentType = ComponentType.MechPart,
+                Count = 1,
+                Weight = sc.Salvage.DefaultMechPartWeight
+            };
+            var description = m.Description;
+            var mechID = m.Chassis.Description.Id.Replace("chassisdef", "mechdef");
+            ModInit.modLog.LogMessage(
+                $"Vanilla Salvage: Overwriting custom {m.Description.Id} with parent ID. ChassisID: {m.Description.Id}, parent MechID: {mechID}");
+
+            var gotParentMech = __instance.DataManager.MechDefs.TryGet(mechID, out var parenMechDef);
+            if (!gotParentMech)
+            {
+                ModInit.modLog.LogMessage(
+                    $"Vanilla Salvage: Couldn't get parent mech with ID {mechID}, something fucked. Reverting to 'custom' mechdef with ID {description.Id} and crossing fingies.");
+                var description2 = new DescriptionDef(description.Id,
+                    $"{description.Name} {sc.Story.DefaultMechPartName}", description.Details, description.Icon, description.Cost, description.Rarity, description.Purchasable, description.Manufacturer, description.Model, description.UIName);
+                salvageDef.Description = description2;
+                salvageDef.RewardID = __instance.GenerateRewardUID();
+                __result = salvageDef;
+                return;
+            }
+            var description3 = new DescriptionDef(parenMechDef.Description);
+            salvageDef.Description = description3;
+            salvageDef.RewardID = __instance.GenerateRewardUID();
+            __result = salvageDef;
         }
     }
 }

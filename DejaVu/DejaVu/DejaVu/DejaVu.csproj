@@ -37,13 +37,6 @@
     <Reference Include="Assembly-CSharp">
       <HintPath>D:\SteamLibrary\steamapps\common\BATTLETECH\BattleTech_Data\Managed\Assembly-CSharp.dll</HintPath>
     </Reference>
-    <Reference Include="CustomComponents, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>D:\SteamLibrary\steamapps\common\BATTLETECH\Mods\CustomComponents\CustomComponents.dll</HintPath>
-    </Reference>
-    <Reference Include="CustomUnits">
-      <HintPath>D:\SteamLibrary\steamapps\common\BATTLETECH\Mods\CustomUnits\CustomUnits.dll</HintPath>
-    </Reference>
     <Reference Include="InControl, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>D:\SteamLibrary\steamapps\common\BATTLETECH\BattleTech_Data\Managed\InControl.dll</HintPath>
@@ -70,6 +63,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Framework\CU_CC_Util.cs" />
     <Compile Include="Framework\Util.cs" />
     <Compile Include="Framework\Logger.cs" />
     <Compile Include="ModInit.cs" />
