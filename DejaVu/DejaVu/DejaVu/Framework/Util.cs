@@ -56,6 +56,7 @@ namespace DejaVu.Framework
             {
                 foreach (var t in dm.MechDefs)
                 {
+                    t.Value.Refresh();
                     AllMechInventories.Add(t.Value.Inventory);
                     ModInit.modLog.LogTrace($"Added MechInventory for {t.Value.Description.UIName} to allMechInventories");
                 }

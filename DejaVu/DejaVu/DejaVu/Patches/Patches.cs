@@ -55,6 +55,21 @@ namespace DejaVu.Patches
             foreach (LanceLoadoutSlot lanceLoadoutSlot in ___loadoutSlots)
             {
                 if (lanceLoadoutSlot.SelectedMech == null) continue; 
+
+                if (lanceLoadoutSlot.SelectedMech.MechDef.MechTags.Any(x => ModInit.modSettings.disallowedUnitTags.Contains(x)))
+                {
+                    ModInit.modLog.LogTrace(
+                        $"{lanceLoadoutSlot.SelectedMech.MechDef.Chassis.VariantName} had a verboten unit tag, skipping!");
+                    continue;
+                }
+
+                if (lanceLoadoutSlot.SelectedMech.ChassisDef.ChassisTags.Any(x => ModInit.modSettings.disallowedUnitTags.Contains(x)))
+                {
+                    ModInit.modLog.LogTrace(
+                        $"{lanceLoadoutSlot.SelectedMech.MechDef.Chassis.VariantName} had a verboten unit tag, skipping!");
+                    continue;
+                }
+
                 if (lanceLoadoutSlot.SelectedMech.MechDef.Inventory.Any(x =>
                     x.Def.ComponentTags.Any(y => ModInit.modSettings.disallowedComponentTags.Contains(y))))
                 {
@@ -158,6 +173,20 @@ namespace DejaVu.Patches
             if (!string.IsNullOrEmpty(text2)) return;
 
             Util.UtilInstance.GetDataManagerMechDefInventories(UnityGameInstance.BattleTechGame.DataManager);
+
+            if (__instance.activeMechDef.MechTags.Any(x => ModInit.modSettings.disallowedUnitTags.Contains(x)))
+            {
+                ModInit.modLog.LogTrace(
+                    $"{__instance.activeMechDef.Chassis.VariantName} had a verboten unit tag, skipping!");
+                return;
+            }
+
+            if (__instance.activeMechDef.Chassis.ChassisTags.Any(x => ModInit.modSettings.disallowedUnitTags.Contains(x)))
+            {
+                ModInit.modLog.LogTrace(
+                    $"{__instance.activeMechDef.Chassis.VariantName} had a verboten unit tag, skipping!");
+                return;
+            }
 
             if (__instance.activeMechDef.Inventory.Any(x =>
                 x.Def.ComponentTags.Any(y => ModInit.modSettings.disallowedComponentTags.Contains(y))))
