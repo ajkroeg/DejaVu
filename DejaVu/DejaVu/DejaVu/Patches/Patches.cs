@@ -17,19 +17,19 @@ namespace DejaVu.Patches
     {
         public static bool Prepare() => ModInit.modSettings.killsToSave >= 0;
         [HarmonyPriority(Priority.Last)]
-        public static void Prefix(LanceConfiguratorPanel __instance, LanceLoadoutSlot[] ___loadoutSlots, bool ___mechWarningsCheckResolved)
+        public static void Prefix(LanceConfiguratorPanel __instance)
         {
             ModState.runContinueConfirmClickedPost = false;
-            if (___mechWarningsCheckResolved)
+            if (__instance.mechWarningsCheckResolved)
             {
                 ModState.runContinueConfirmClickedPost = true;
             }
         }
 
-        public static void Postfix(LanceConfiguratorPanel __instance, LanceLoadoutSlot[] ___loadoutSlots)
+        public static void Postfix(LanceConfiguratorPanel __instance)
         {
             bool flag = false;
-            foreach (var lanceLoadoutSlot in ___loadoutSlots)
+            foreach (var lanceLoadoutSlot in __instance.loadoutSlots)
             {
                 if (lanceLoadoutSlot.SelectedMech != null)
                 {
@@ -52,7 +52,7 @@ namespace DejaVu.Patches
             
             Util.UtilInstance.GetDataManagerMechDefInventories(UnityGameInstance.BattleTechGame.DataManager);
 
-            foreach (LanceLoadoutSlot lanceLoadoutSlot in ___loadoutSlots)
+            foreach (LanceLoadoutSlot lanceLoadoutSlot in __instance.loadoutSlots)
             {
                 if (lanceLoadoutSlot.SelectedMech == null) continue; 
 
@@ -129,11 +129,11 @@ namespace DejaVu.Patches
     public static class FillInPilotData_Patch
     {
         public static bool Prepare() => ModInit.modSettings.killsToSave >= 0;
-        public static void Postfix(AAR_UnitStatusWidget __instance, UnitResult ___UnitData)
+        public static void Postfix(AAR_UnitStatusWidget __instance)
         {
-            if (___UnitData.pilot.MechsKilled + ___UnitData.pilot.OthersKilled < ModInit.modSettings.killsToSave)
+            if (__instance.UnitData.pilot.MechsKilled + __instance.UnitData.pilot.OthersKilled < ModInit.modSettings.killsToSave)
             {
-                var mech = ___UnitData.mech;
+                var mech = __instance.UnitData.mech;
                 Util.UtilInstance.DejaVuMechs.RemoveAll(x =>
                     x.Description.UIName == mech.Description.UIName && x.Description.Id == mech.Description.Id &&
                     x.Description.Name == mech.Description.Name);
@@ -161,12 +161,12 @@ namespace DejaVu.Patches
     {
         public static bool Prepare() => ModInit.modSettings.enableMechBayExport;
 
-        public static void Postfix(MechLabPanel __instance, MechLabMechInfoWidget ___mechInfoWidget)
+        public static void Postfix(MechLabPanel __instance)
         {
             var hk = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
             if (!hk) return;
 
-            if (!___mechInfoWidget.IsNameValid()) return;
+            if (!__instance.mechInfoWidget.IsNameValid()) return;
             string text = __instance.GetCantSaveErrorString().ToString();
             if (!string.IsNullOrEmpty(text)) return;
             string text2 = __instance.GetNonFieldableErrorString().ToString();
