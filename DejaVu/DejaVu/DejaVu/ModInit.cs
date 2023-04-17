@@ -46,7 +46,6 @@ namespace DejaVu
         public List<string> disallowedComponentTags = new List<string>();
         public List<string> disallowedUnitTags = new List<string>();
         public bool clearMechTags = false;
-        public List<string> customChassisTags = new List<string>();
         public List<string> customMechTags = new List<string>();
     }
 }

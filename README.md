@@ -16,8 +16,11 @@ Before export, the custom mechs are checked against existing mechs in order to a
 		"trace": false,
 		"killsToSave": 0,
 		"enableMechBayExport": true,
-		"dissallowedComponentTags": [
+		"disallowedComponentTags": [
 			"range_standard"
+			],
+		"disallowedUnitTags": [
+			"mech_heavy"
 			],
 		"clearMechTags": true,
 		"customChassisTags":[
@@ -38,6 +41,8 @@ Before export, the custom mechs are checked against existing mechs in order to a
 `enableMechBayExport`: bool. if true; holding shift while clicking "validate" in the MechLab will manually export that unit <i>if</i> that unit is a valid loadout (no "unfieldable" warnings and mech name is not blank).
 
 `disallowedComponentTags`: List of mech ComponentTags which, if present on the mech, will prevent that mech from being exported.
+
+`disallowedUnitTags`: same as above, but mechdef or chassisdef tags.
 
 `clearMechTags`: bool. if true, all MechTags and ChassisTags will be cleared from the exported unit.
 
