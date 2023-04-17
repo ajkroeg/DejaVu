@@ -4,7 +4,7 @@
   </Target>
   <PropertyGroup Condition="'$(DejaVuModPath)' == '' And Exists('$(BattleTechGameDir)\Mods\Core\DejaVu')">
     <!-- RogueTech -->
-    <DejaVuModPath>$(BattleTechGameDir)\Mods\Core\CollateralDamageCollateralDamage</DejaVuModPath>
+    <DejaVuModPath>$(BattleTechGameDir)\Mods\Core\DejaVu</DejaVuModPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(DejaVuModPath)' == '' And Exists('$(BattleTechGameDir)\Mods\DejaVu')">
     <!-- flat dir -->
