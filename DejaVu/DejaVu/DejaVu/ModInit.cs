@@ -1,5 +1,4 @@
-﻿using Harmony;
-using System;
+﻿using System;
 using System.Reflection;
 using System.Collections.Generic;
 using DejaVu.Framework;
@@ -12,7 +11,6 @@ namespace DejaVu
     {
         internal static Logger modLog;
         internal static string modDir;
-
 
         internal static Settings modSettings;
         public const string HarmonyPackage = "us.tbone.DejaVu";
@@ -33,10 +31,10 @@ namespace DejaVu
             //HarmonyInstance.DEBUG = true;
             ModInit.modLog.LogMessage($"Initializing {HarmonyPackage} - Version {typeof(Settings).Assembly.GetName().Version}");
             Util.UtilInstance.Initialize();
-            var harmony = HarmonyInstance.Create(HarmonyPackage);
-            harmony.PatchAll(Assembly.GetExecutingAssembly());
+            //var harmony = HarmonyInstance.Create(HarmonyPackage);
+            //harmony.PatchAll(Assembly.GetExecutingAssembly());
+            Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), HarmonyPackage);
         }
-
     }
 
     class Settings

@@ -4,7 +4,6 @@ using System.Linq;
 using BattleTech;
 using BattleTech.UI;
 using DejaVu.Framework;
-using Harmony;
 using HBS;
 using Localize;
 using UnityEngine;
