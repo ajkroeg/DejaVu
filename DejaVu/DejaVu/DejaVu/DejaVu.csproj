@@ -57,9 +57,6 @@
     <Reference Include="Assembly-CSharp">
       <Private>False</Private>
     </Reference>
-    <Reference Include="Assembly-CSharp-firstpass">
-      <Private>False</Private>
-    </Reference>
     <Reference Include="Newtonsoft.Json">
       <Private>False</Private>
     </Reference>
@@ -72,15 +69,6 @@
     <Reference Include="System.Core">
       <Private>False</Private>
     </Reference>
-    <Reference Include="System.Data">
-      <Private>False</Private>
-    </Reference>
-	    <Reference Include="System.Xml">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.TextMeshPro">
-      <Private>False</Private>
-    </Reference>
     <Reference Include="UnityEngine">
       <Private>False</Private>
     </Reference>
@@ -88,9 +76,6 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.UI" Publicize="true">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="UnityEngine.UIModule">
       <Private>False</Private>
     </Reference>
   </ItemGroup>
