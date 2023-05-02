@@ -28,7 +28,7 @@ namespace DejaVu.Framework
         {
             if (enableLogging)
             {
-                string ts = DateTime.UtcNow.ToString("s", System.Globalization.CultureInfo.InvariantCulture);
+                string ts = DateTime.UtcNow.ToString("HH:mm:ss.ffff", System.Globalization.CultureInfo.InvariantCulture);
                 logStreamWriter.WriteLine($"INFO: {ts} - {message}");
             }
         }
@@ -37,20 +37,20 @@ namespace DejaVu.Framework
         {
             if (trace)
             {
-                string ts = DateTime.UtcNow.ToString("s", System.Globalization.CultureInfo.InvariantCulture);
+                string ts = DateTime.UtcNow.ToString("HH:mm:ss.ffff", System.Globalization.CultureInfo.InvariantCulture);
                 logStreamWriter.WriteLine($"INFO: {ts} - {message}");
             }
         }
 
         public void LogError(string message)
         {
-            string ts = DateTime.UtcNow.ToString("s", System.Globalization.CultureInfo.InvariantCulture);
+            string ts = DateTime.UtcNow.ToString("HH:mm:ss.ffff", System.Globalization.CultureInfo.InvariantCulture);
             logStreamWriter.WriteLine($"ERROR: {ts} - {message}");
         }
 
         public void LogException(Exception exception)
         {
-            string ts = DateTime.UtcNow.ToString("s", System.Globalization.CultureInfo.InvariantCulture);
+            string ts = DateTime.UtcNow.ToString("HH:mm:ss.ffff", System.Globalization.CultureInfo.InvariantCulture);
             logStreamWriter.WriteLine($"CRITICAL: {ts} - {exception}");
         }
     }
